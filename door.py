@@ -97,7 +97,7 @@ def cam():
 def door():
   """Hệ thống cửa tự động"""
   global delay_sending
-  pin4.servo_write(60)
+  pin4.servo_write(40)
   time.sleep_ms(5000)
   delay_sending += 5
   pin4.servo_write(180)
@@ -141,10 +141,11 @@ def security_system(permision):
   delay += 1
   
 
-def on_mqtt_message_receive_callback__work_please_(info):
+def on_mqtt_message_receive_callback__V6_(info):
   """Điều khiển IOT"""
   global delay
   if info == "1":
+    print("1")
     PIR(off=True)
     door()
     PIR(off=False)
@@ -157,15 +158,14 @@ if __name__ == "__main__":
   if True:
     wifi.connect_wifi(Wifi, password)
     mqtt.connect_wifi(Wifi, password)
-    mqtt.connect_broker(server='io.adafruit.com', port=1883, username='Pen215', password='aio_LmGo95rUINBj0MRsqTIOMEKHoaWo')
-    mqtt.on_receive_message('work-please', on_mqtt_message_receive_callback__work_please_)
+    mqtt.connect_broker(server='mqtt.ohstem.vn', port=1883, username='Pen215', password='')
+    mqtt.on_receive_message('V6', on_mqtt_message_receive_callback__V6_)
     gc.collect()
 
   while True:
-    if not turn_off:
-      mqtt.check_message()
-      sending_mess(2)
-      camera = cam()
-      security_system(camera)
-      PIR(cam=camera)
+    mqtt.check_message()
+    camera = cam()
+    PIR(cam=camera)
+    sending_mess(2)
+    security_system(camera)
     time.sleep_ms(1000)
