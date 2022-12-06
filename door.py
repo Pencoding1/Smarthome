@@ -31,13 +31,13 @@ def read_terminal_input():
   return input
 
 
-delay_sending = 20
+delay_sending = 5
 def sending_mess(mode):
   """Gửi tin nhắn về telegram"""
   global delay_sending, sending_excution_time
   sending_time = 0
   
-  if delay_sending >= 20:
+  if delay_sending >= 5:
     if not mode:
       start = round(time.time())
       http_response = urequests.get((''.join([str(x) for x in ['https://api.telegram.org/bot', TOKEN, '/sendMessage?text=', 'có người lạ đứng trước cửa', '&chat_id=', ID]])))
@@ -66,8 +66,8 @@ def sending_mess(mode):
 def PIR(cam=None, off=None):
   """Điều khiển PIR"""
   if not off:
-    if pin20.read_digital()!= 1:
-    
+    print(pin0.read_digital() == 1)
+    if pin0.read_digital() == 1:
       if not cam:
         sending_mess(1)
     
@@ -82,7 +82,7 @@ def PIR(cam=None, off=None):
 def cam():
   """Nhận diện khuôn mặt"""
   global cam_input
-  cam_input = "NQ"
+  cam_input = False
   
   if cam_input == 'NQ':
     return True
@@ -109,7 +109,7 @@ def security_system(permision):
   locked = False
   sending = True
   
-  if fail >= 8 and counting < 30:
+  if fail >= 5 and counting < 30:
     
     if sending:
       sending_mess(0)
@@ -141,7 +141,7 @@ def security_system(permision):
   delay += 1
   
 
-def on_mqtt_message_receive_callback__V6_(info):
+def on_mqtt_message_receive_callback__V5_(info):
   """Điều khiển IOT"""
   global delay
   if info == "1":
@@ -159,13 +159,18 @@ if __name__ == "__main__":
     wifi.connect_wifi(Wifi, password)
     mqtt.connect_wifi(Wifi, password)
     mqtt.connect_broker(server='mqtt.ohstem.vn', port=1883, username='Pen215', password='')
-    mqtt.on_receive_message('V6', on_mqtt_message_receive_callback__V6_)
+    mqtt.on_receive_message('V5', on_mqtt_message_receive_callback__V5_)
     gc.collect()
-
+    cou = 0
   while True:
+    cou += 1
     mqtt.check_message()
     camera = cam()
+    # print("Cam done")
     PIR(cam=camera)
+    # print("PIR done")
     sending_mess(2)
+    # print("mess done")
     security_system(camera)
+    # print(f"{cou}-------")
     time.sleep_ms(1000)
